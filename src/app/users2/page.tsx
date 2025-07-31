@@ -3,8 +3,10 @@ import { loadSortParams } from "@/hooks/use-sort-params";
 import { loadUserFilterParams } from "@/hooks/use-user-filter-params";
 import type { User } from "@/server/db/schema";
 import { getUsers } from "@/server/queries";
+import { api } from "@/trpc/server";
+import { QueryClient } from "@tanstack/react-query";
 import { Suspense } from "react";
-import UsersTable from "./users-table";
+import UsersTable from "./users2-table";
 
 interface Props {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -12,18 +14,12 @@ interface Props {
 
 export default async function UsersPage(props: Props) {
   const searchParams = await props.searchParams;
-  const filterParams = loadUserFilterParams(searchParams);
-  const sortParams = loadSortParams(searchParams);
+  const filters = loadUserFilterParams(searchParams);
+  const sort = loadSortParams(searchParams);
 
-  // Create the promise but don't await it
-  const usersPromise = getUsers({
-    search: filterParams.search,
-    status: filterParams.status,
-    role: filterParams.role,
-    page: filterParams.page,
-    pageSize: filterParams.pageSize,
-    sortColumn: sortParams.sortColumn as keyof User,
-    sortDirection: sortParams.sortDirection as "asc" | "desc",
+  void api.user.list.prefetch({
+    ...filters,
+    ...sort,
   });
 
   return (
@@ -54,7 +50,7 @@ export default async function UsersPage(props: Props) {
               />
             }
           >
-            <UsersTable usersPromise={usersPromise} />
+            <UsersTable />
           </Suspense>
         </div>
       </div>
