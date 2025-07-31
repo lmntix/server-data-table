@@ -14,8 +14,6 @@ export type GetUsersParams = {
 
 export const getUsers = async (params: GetUsersParams) => {
   const { search, status, role, page = 1, pageSize = 10, sort } = params;
-  // TODO: Remove this artificial delay after testing
-  await new Promise((resolve) => setTimeout(resolve, 1000));
 
   const whereConditions: SQL[] = [];
 

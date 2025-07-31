@@ -19,7 +19,7 @@
   - Handle columns: name, email, status, role, createdAt with asc/desc cases
   - _Requirements: 3.1, 3.2, 3.4_
 
-- [ ] 4. Update user router
+- [x] 4. Update user router
 
   - Pass `sort` array from input to `getUsers` function
   - Remove `sortColumn` and `sortDirection` parameter passing

@@ -1,34 +1,34 @@
-
 "use client";
 
 import { columns } from "@/components/users/columns";
 import { DataTable } from "@/components/users/data-table";
 import { DataTablePagination } from "@/components/users/data-table-pagination";
 import { DataTableToolbar } from "@/components/users/data-table-toolbar";
-import type { User } from "@/server/db/schema";
-import { use } from "react";
+import { useSortParams } from "@/hooks/use-sort-params";
+import { useUserFilterParams } from "@/hooks/use-user-filter-params";
+import { api } from "@/trpc/react";
 
-interface UsersTableProps {
-	usersPromise: Promise<{
-		data: User[];
-		total: number;
-		page: number;
-		pageSize: number;
-		totalPages: number;
-	}>;
-}
+export default function UsersTable() {
+  const { filter } = useUserFilterParams();
+  const { params: sortParams } = useSortParams();
 
-export default function UsersTable({ usersPromise }: UsersTableProps) {
-	const result = use(usersPromise);
+  const [result] = api.user.list.useSuspenseQuery({
+    search: filter.search,
+    status: filter.status,
+    role: filter.role,
+    page: filter.page,
+    pageSize: filter.pageSize,
+    sort: sortParams.sort || undefined,
+  });
 
-	return (
-		<div className="space-y-4">
-			<DataTableToolbar />
-			<DataTable columns={columns} data={result.data} />
-			<DataTablePagination
-				totalPages={result.totalPages}
-				total={result.total}
-			/>
-		</div>
-	);
+  return (
+    <div className="space-y-4">
+      <DataTableToolbar />
+      <DataTable columns={columns} data={result.data} />
+      <DataTablePagination
+        totalPages={result.totalPages}
+        total={result.total}
+      />
+    </div>
+  );
 }
