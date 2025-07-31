@@ -42,7 +42,7 @@ export async function getUsers({
 
   if (search) {
     conditions.push(
-      or(eq(users.name, `%${search}%`), eq(users.email, `%${search}%`))
+      or(ilike(users.name, `%${search}%`), ilike(users.email, `%${search}%`))
     );
   }
 

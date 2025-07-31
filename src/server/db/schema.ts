@@ -2,22 +2,22 @@ import { sql } from "drizzle-orm";
 import {
   index,
   integer,
-  sqliteTable,
-  sqliteTableCreator,
+  pgTable,
+  serial,
   text,
-} from "drizzle-orm/sqlite-core";
+  timestamp,
+  varchar,
+} from "drizzle-orm/pg-core";
 
-export const posts = sqliteTable("post", {
-  id: integer({ mode: "number" }).primaryKey({ autoIncrement: true }),
-  name: text({ length: 256 }),
-  createdAt: integer({ mode: "timestamp" })
-    .default(sql`(unixepoch())`)
-    .notNull(),
-  updatedAt: integer({ mode: "timestamp" }).$onUpdate(() => new Date()),
+export const posts = pgTable("post", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 256 }),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").$onUpdate(() => new Date()),
 });
 
-export const users = sqliteTable("users", {
-  id: integer({ mode: "number" }).primaryKey({ autoIncrement: true }),
+export const users = pgTable("users", {
+  id: serial("id").primaryKey(),
   name: text("name").notNull(),
   email: text("email").notNull().unique(),
   status: text("status", { enum: ["active", "inactive", "pending"] })
@@ -26,9 +26,7 @@ export const users = sqliteTable("users", {
   role: text("role", { enum: ["admin", "user", "moderator"] })
     .notNull()
     .default("user"),
-  createdAt: integer("created_at", { mode: "timestamp" })
-    .default(sql`(unixepoch())`)
-    .notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
 });
 
 export type User = typeof users.$inferSelect;
