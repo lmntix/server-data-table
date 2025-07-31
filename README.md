@@ -1,3 +1,4 @@
+```sql
 INSERT INTO users (name, email, status, role, created_at)
 SELECT
 'User ' || x,
@@ -14,3 +15,4 @@ ELSE 'moderator'
 END,
 NOW()
 FROM generate_series(1, 300) AS s(x);
+```
