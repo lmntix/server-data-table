@@ -15,22 +15,11 @@ const listUsersInputSchema = z.object({
   role: z.enum(["admin", "user", "moderator"]).nullable(),
   page: z.number(),
   pageSize: z.number(),
-  sortColumn: z
-    .enum(["id", "name", "email", "status", "role", "createdAt"])
-    .default("createdAt"),
-  sortDirection: z.enum(["asc", "desc"]).default("desc"),
+  sort: z.array(z.string()).optional(),
 });
 
 export const userRouter = createTRPCRouter({
   list: publicProcedure.input(listUsersInputSchema).query(async ({ input }) => {
-    return await getUsers({
-      search: input.search,
-      status: input.status,
-      role: input.role,
-      page: input.page,
-      pageSize: input.pageSize,
-      sortColumn: input.sortColumn,
-      sortDirection: input.sortDirection,
-    });
+    return await getUsers(input);
   }),
 });

@@ -1,80 +1,100 @@
-import { and, asc, count, desc, eq, ilike, or, sql } from "drizzle-orm";
+import { and, asc, count, desc, ilike, or, sql } from "drizzle-orm";
+import type { SQL } from "drizzle-orm/sql/sql";
 import { db } from "./db";
-import { type User, users } from "./db/schema";
+import { users } from "./db/schema";
 
-export interface UsersFilters {
-  search?: string | null;
-  status?: string | null;
-  role?: string | null;
-}
-
-export interface UsersPagination {
-  page: number;
-  pageSize: number;
-}
-
-export interface UsersSort {
-  column: keyof User;
-  direction: "asc" | "desc";
-}
-
-export async function getUsers({
-  search,
-  status,
-  role,
-  page = 1,
-  pageSize = 10,
-  sortColumn = "createdAt",
-  sortDirection = "desc",
-}: {
+export type GetUsersParams = {
   search?: string | null;
   status?: string | null;
   role?: string | null;
   page?: number;
   pageSize?: number;
-  sortColumn?: keyof User;
-  sortDirection?: "asc" | "desc";
-}) {
+  sort?: string[] | null;
+};
+
+export const getUsers = async (params: GetUsersParams) => {
+  const { search, status, role, page = 1, pageSize = 10, sort } = params;
   // TODO: Remove this artificial delay after testing
   await new Promise((resolve) => setTimeout(resolve, 1000));
-  // Build where conditions
-  const conditions = [];
 
+  const whereConditions: SQL[] = [];
+
+  // Apply search filter
   if (search) {
-    conditions.push(
-      or(ilike(users.name, `%${search}%`), ilike(users.email, `%${search}%`))
+    const searchCondition = or(
+      ilike(users.name, `%${search}%`),
+      ilike(users.email, `%${search}%`)
     );
+    if (searchCondition) {
+      whereConditions.push(searchCondition);
+    }
   }
 
+  // Apply status filter
   if (status) {
-    conditions.push(sql`${users.status} = ${status}`);
+    whereConditions.push(sql`${users.status} = ${status}`);
   }
 
+  // Apply role filter
   if (role) {
-    conditions.push(sql`${users.role} = ${role}`);
+    whereConditions.push(sql`${users.role} = ${role}`);
   }
-
-  const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
 
   // Get total count
   const totalResult = await db
     .select({ total: count() })
     .from(users)
-    .where(whereClause);
+    .where(whereConditions.length > 0 ? and(...whereConditions) : undefined);
   const total = totalResult[0]?.total ?? 0;
 
-  // Get paginated results
-  const orderBy =
-    sortDirection === "asc" ? asc(users[sortColumn]) : desc(users[sortColumn]);
-  const offset = (page - 1) * pageSize;
-
-  const data = await db
+  // Start building the query
+  const query = db
     .select()
     .from(users)
-    .where(whereClause)
-    .orderBy(orderBy)
-    .limit(pageSize)
-    .offset(offset);
+    .where(whereConditions.length > 0 ? and(...whereConditions) : undefined);
+
+  // Apply sorting
+  if (sort && sort.length === 2) {
+    const [column, direction] = sort;
+    const isAscending = direction === "asc";
+
+    if (column === "id") {
+      isAscending
+        ? query.orderBy(asc(users.id))
+        : query.orderBy(desc(users.id));
+    } else if (column === "name") {
+      isAscending
+        ? query.orderBy(asc(users.name))
+        : query.orderBy(desc(users.name));
+    } else if (column === "email") {
+      isAscending
+        ? query.orderBy(asc(users.email))
+        : query.orderBy(desc(users.email));
+    } else if (column === "status") {
+      isAscending
+        ? query.orderBy(asc(users.status))
+        : query.orderBy(desc(users.status));
+    } else if (column === "role") {
+      isAscending
+        ? query.orderBy(asc(users.role))
+        : query.orderBy(desc(users.role));
+    } else if (column === "createdAt" || column === "created_at") {
+      isAscending
+        ? query.orderBy(asc(users.createdAt))
+        : query.orderBy(desc(users.createdAt));
+    }
+    // Add other sorting options as needed
+  } else {
+    // Default sort by createdAt descending
+    query.orderBy(desc(users.createdAt));
+  }
+
+  // Apply pagination
+  const offset = (page - 1) * pageSize;
+  query.limit(pageSize).offset(offset);
+
+  // Execute query
+  const data = await query;
 
   return {
     data,
@@ -83,4 +103,4 @@ export async function getUsers({
     pageSize,
     totalPages: Math.ceil(total / pageSize),
   };
-}
+};

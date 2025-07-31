@@ -1,9 +1,8 @@
 import { useQueryStates } from "nuqs";
-import { createLoader, parseAsString } from "nuqs/server";
+import { createLoader, parseAsArrayOf, parseAsString } from "nuqs/server";
 
 export const sortParamsSchema = {
-  sortColumn: parseAsString.withDefault("createdAt"),
-  sortDirection: parseAsString.withDefault("desc"),
+  sort: parseAsArrayOf(parseAsString),
 };
 
 export function useSortParams() {
