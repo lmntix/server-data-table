@@ -10,7 +10,7 @@ import { api } from "@/trpc/react";
 
 export default function UsersTable() {
   const { filter } = useUserFilterParams();
-  const { params: sortParams } = useSortParams();
+  const { params } = useSortParams();
 
   const [result] = api.user.list.useSuspenseQuery({
     search: filter.search,
@@ -18,7 +18,7 @@ export default function UsersTable() {
     role: filter.role,
     page: filter.page,
     pageSize: filter.pageSize,
-    sort: sortParams.sort || undefined,
+    sort: params.sort,
   });
 
   return (

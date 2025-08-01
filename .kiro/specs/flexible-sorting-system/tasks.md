@@ -25,7 +25,7 @@
   - Remove `sortColumn` and `sortDirection` parameter passing
   - _Requirements: 5.1, 5.2_
 
-- [ ] 5. Fix users table component
+- [x] 5. Fix users table component
   - Update `UsersTable` to properly destructure and pass sort parameters
   - Fix the type errors with the tRPC query
   - _Requirements: 5.3, 5.4_

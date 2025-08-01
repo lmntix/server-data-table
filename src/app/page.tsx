@@ -22,7 +22,7 @@ export default async function UsersPage(props: Props) {
     role: filters.role,
     page: filters.page,
     pageSize: filters.pageSize,
-    sort: sortParams.sort || undefined,
+    sort: sortParams.sort,
   });
 
   return (

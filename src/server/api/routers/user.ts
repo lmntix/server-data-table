@@ -15,7 +15,7 @@ const listUsersInputSchema = z.object({
   role: z.enum(["admin", "user", "moderator"]).nullable(),
   page: z.number(),
   pageSize: z.number(),
-  sort: z.array(z.string()).optional(),
+  sort: z.array(z.string(), z.string()).nullable().optional(),
 });
 
 export const userRouter = createTRPCRouter({
